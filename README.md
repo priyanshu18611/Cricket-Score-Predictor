@@ -1,54 +1,20 @@
 # 🏏 Cricket Score Predictor
 
-A Machine Learning based Cricket Score Predictor that estimates the final score of a cricket team using historical match data and current match conditions.
+An end-to-end Machine Learning web application built with Streamlit and XGBoost to predict the final score of a cricket match based on live match dynamics.
 
 ## 🚀 Features
+- **Real-time Prediction**: Estimates the final innings score based on match conditions.
+- **Dynamic Inputs**: Batting team, bowling team, venue, current score, overs, wickets, and last 5 overs performance.
+- **Interactive UI**: Built with Streamlit for low-latency predictions.
 
-- Predicts final innings score
-- Data preprocessing and feature engineering
-- Machine Learning based prediction
-- Historical cricket data analysis
-- Model evaluation and performance metrics
+## 🛠️ Tech Stack
+- **Languages & Libraries**: Python, XGBoost, Scikit-Learn, Pandas, NumPy
+- **Framework**: Streamlit
 
-## 🛠 Technologies Used
+## ⚙️ How to Run Locally
 
-- Python
-- Pandas
-- NumPy
-- Scikit-Learn
-- XGBoost
-- Matplotlib
-- Jupyter Notebook
-
-## 📂 Project Structure
-
-├── CricketScorePredictor.ipynb
-├── dataset.csv
-├── requirements.txt
-├── model.pkl
-└── README.md
-
-## 📊 Project Workflow
-
-1. Data Collection
-2. Data Cleaning
-3. Feature Engineering
-4. Model Training
-5. Score Prediction
-6. Performance Evaluation
-
-## 🎯 Results
-
-- Accurate score prediction using Machine Learning
-- Historical cricket match analysis
-- Optimized prediction pipeline
-
-## 👨‍💻 Author
-
-Priyanshu Kumar
-
-GitHub:
-https://github.com/priyanshu18611
-
-LinkedIn:
-https://www.linkedin.com/in/priyanshuroy18
+```bash
+git clone [https://github.com/priyanshu18611/Cricket-Score-Predictor.git](https://github.com/priyanshu18611/Cricket-Score-Predictor.git)
+cd Cricket-Score-Predictor
+pip install -r requirements.txt
+streamlit run app.py
