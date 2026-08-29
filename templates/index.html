@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T20 Score Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <div class="floodlight floodlight--left"></div>
+  <div class="floodlight floodlight--right"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="eyebrow">Live Match Analytics</span>
+      <h1 class="wordmark">T20 SCORE<span class="wordmark-accent">PREDICTOR</span></h1>
+      <p class="tagline">Feed in the state of play, get the projected final total — powered by an XGBoost model trained on T20 International history.</p>
+    </div>
+  </header>
+
+  <main class="board-wrap">
+
+    <section class="scoreboard" aria-live="polite">
+      <div class="scoreboard-row">
+        <div class="scoreboard-cell">
+          <span class="cell-label">Predicted Final Score</span>
+          {% if prediction is not none %}
+            <span class="cell-value cell-value--big">{{ prediction }}</span>
+          {% else %}
+            <span class="cell-value cell-value--placeholder">— — —</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if error %}
+        <p class="scoreboard-error">⚠ {{ error }}</p>
+      {% elif prediction is not none %}
+        <p class="scoreboard-note">Average model error is roughly ±10 runs.</p>
+      {% endif %}
+    </section>
+
+    <form class="matchform" method="POST" action="/predict">
+      <div class="field-grid">
+
+        <div class="field">
+          <label for="batting_team">Batting team</label>
+          <select id="batting_team" name="batting_team" required>
+            {% for t in batting_teams %}
+              <option value="{{ t }}" {% if form_data and form_data.get('batting_team') == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="bowling_team">Bowling team</label>
+          <select id="bowling_team" name="bowling_team" required>
+            {% for t in bowling_teams %}
+              <option value="{{ t }}" {% if form_data and form_data.get('bowling_team') == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="city">City</label>
+          <select id="city" name="city" required>
+            {% for c in cities %}
+              <option value="{{ c }}" {% if form_data and form_data.get('city') == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="current_score">Current score</label>
+          <input type="number" id="current_score" name="current_score" min="0" step="1" required
+                 value="{{ form_data.get('current_score') if form_data else '' }}" placeholder="e.g. 96" />
+        </div>
+
+        <div class="field field--split">
+          <div>
+            <label for="overs_done">Overs completed</label>
+            <input type="number" id="overs_done" name="overs_done" min="0" max="20" step="1" required
+                   value="{{ form_data.get('overs_done') if form_data else '' }}" placeholder="0–20" />
+          </div>
+          <div>
+            <label for="balls_done">Balls this over</label>
+            <input type="number" id="balls_done" name="balls_done" min="0" max="5" step="1" required
+                   value="{{ form_data.get('balls_done') if form_data else '' }}" placeholder="0–5" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="wickets_fallen">Wickets fallen</label>
+          <input type="number" id="wickets_fallen" name="wickets_fallen" min="0" max="10" step="1" required
+                 value="{{ form_data.get('wickets_fallen') if form_data else '' }}" placeholder="0–10" />
+        </div>
+
+        <div class="field">
+          <label for="last_five">Runs in last 5 overs</label>
+          <input type="number" id="last_five" name="last_five" min="0" step="1" required
+                 value="{{ form_data.get('last_five') if form_data else '' }}" placeholder="e.g. 42" />
+        </div>
+
+      </div>
+
+      <button type="submit" class="predict-btn">Predict final score</button>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <p>Model: XGBoost Regressor · Dataset: T20 International matches (~2005–2025), sourced from Kaggle · Deployed with Flask</p>
+  </footer>
+
+</body>
+</html>
