@@ -1,50 +1,47 @@
-import streamlit as st
+from flask import Flask, render_template, request
 import pickle
 import pandas as pd
 import numpy as np
 
-# Load trained pipeline
-pipe = pickle.load(open('pipe.pkl', 'rb'))
+app = Flask(__name__)
+
+# Model loading
+try:
+    pipe = pickle.load(open('pipe.pkl', 'rb'))
+except Exception:
+    pipe = None
 
 teams = [
-    'Australia', 'India', 'Bangladesh', 'New Zealand', 'South Africa', 
+    'Australia', 'India', 'Bangladesh', 'New Zealand', 'South Africa',
     'England', 'West Indies', 'Afghanistan', 'Pakistan', 'Sri Lanka'
 ]
 
 cities = [
-    'Colombo', 'Mirpur', 'Johannesburg', 'Dubai', 'Auckland', 'Cape Town', 
-    'London', 'Sydney', 'Melbourne', 'Mumbai'
+    'Colombo', 'Mirpur', 'Johannesburg', 'Dubai', 'Auckland', 'Cape Town',
+    'London', 'Pallekele', 'Barbados', 'Sydney', 'Melbourne', 'Durban',
+    'St Lucia', 'Wellington', 'Lauderhill', 'Hamilton', 'Centurion',
+    'Manchester', 'Abu Dhabi', 'Mumbai', 'Nottingham', 'Southampton',
+    'Mount Maunganui', 'Chittagong', 'Kolkata', 'Lahore', 'Delhi',
+    'Nagpur', 'Chandigarh', 'Adelaide', 'Bangalore', 'St Kitts',
+    'Cardiff', 'Christchurch', 'Trinidad'
 ]
 
-st.set_page_config(page_title="Cricket Score Predictor", page_icon="🏏", layout="centered")
-st.title("🏏 T20 Cricket Score Predictor")
-st.markdown("Predict the projected final innings total based on live match dynamics.")
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    prediction_text = None
+    if request.method == 'POST':
+        batting_team = request.form['batting_team']
+        bowling_team = request.form['bowling_team']
+        city = request.form['city']
+        current_score = int(request.form['current_score'])
+        overs = float(request.form['overs'])
+        wickets = int(request.form['wickets'])
+        last_five = int(request.form['last_five'])
 
-col1, col2 = st.columns(2)
-with col1:
-    batting_team = st.selectbox('Select Batting Team', sorted(teams))
-with col2:
-    bowling_team = st.selectbox('Select Bowling Team', sorted(teams))
-
-city = st.selectbox('Select City / Venue', sorted(cities))
-
-col3, col4, col5 = st.columns(3)
-with col3:
-    current_score = st.number_input('Current Score', min_value=0, step=1, value=50)
-with col4:
-    overs = st.number_input('Overs Completed (>= 5)', min_value=5.0, max_value=20.0, step=0.1, value=6.0)
-with col5:
-    wickets = st.number_input('Wickets Fallen', min_value=0, max_value=9, step=1, value=1)
-
-last_five = st.number_input('Runs in Last 5 Overs', min_value=0, step=1, value=40)
-
-if st.button('Predict Final Score'):
-    if batting_team == bowling_team:
-        st.error("Batting and Bowling teams cannot be the same!")
-    else:
-        balls_left = 120 - int(overs * 6)
+        balls_bowled = int(overs) * 6 + int(round((overs % 1) * 10))
+        balls_left = 120 - balls_bowled
         wickets_left = 10 - wickets
-        crr = current_score / overs
+        crr = current_score / overs if overs > 0 else 0
 
         input_df = pd.DataFrame({
             'batting_team': [batting_team],
@@ -57,5 +54,13 @@ if st.button('Predict Final Score'):
             'last_five': [last_five]
         })
 
-        result = pipe.predict(input_df)
-        st.success(f"### 🎯 Predicted Final Score: **{int(result[0])} runs**")
+        if pipe:
+            result = pipe.predict(input_df)
+            prediction_text = int(round(result[0]))
+        else:
+            prediction_text = "Model file (pipe.pkl) not found. Upload pipe.pkl file."
+
+    return render_template('index.html', teams=sorted(teams), cities=sorted(cities), prediction=prediction_text)
+
+if __name__ == '__main__':
+    app.run(debug=True)
